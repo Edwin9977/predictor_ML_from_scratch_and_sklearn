@@ -5,43 +5,43 @@ from sklearn.metrics import mean_squared_error
 
 dataset = pd.read_csv("Indicadores_municipales_sabana_DA.csv", encoding="latin_1")
 
-# columnas a eliminar
+# columns to remove
 columns_to_drop = ["ent", "nom_ent", "mun", "clave_mun", "nom_mun"]
 for i in range(len(columns_to_drop)):
     dataset = dataset.drop(columns = columns_to_drop[i])
 
-# columnas con valores no numericos
+# columns that don't contain number values
 gdo_rezsoc = ['gdo_rezsoc00', 'gdo_rezsoc05', 'gdo_rezsoc10']
 for column in dataset.columns:
     if column not in gdo_rezsoc:
-        # calculando la media de la columna
+        # calculating the mean
         column_mean = dataset[column].mean()
         if dataset[column].isnull().values.any():
-            # si el valor es nullo entonces se remplaza por la media calculada
+            # if value is null, then replace it
             dataset[column].fillna(column_mean, inplace=True)
     else:
         if dataset[column].isnull().values.any():
-            # si algun valor de las columnas gdo_rezsoc es nullo entonces le agregamos el texto "Bajo"
+            # if any non numerical value is null. then replace it with the word Bajo
             dataset[column].fillna('Bajo', inplace=True)
 
-# será un array de arrays de valores unicos
+# unique values
 valores_unicos_en_gdo = []
 for gdo in gdo_rezsoc:
     valores_unicos_en_gdo.append(dataset[gdo].unique())
 
-# array de arrays que tendra nombres de las nuevas columnas
+# new column names
 new_columns = []
 for i in range(len(gdo_rezsoc)):
     new_columns.append([])
     for j in range(len(valores_unicos_en_gdo[i])):
         new_columns[i].append(f"{gdo_rezsoc[i]}_{valores_unicos_en_gdo[i][j]}")
 
-# aqui añadimos nuevas columnas al dataset con sus respectivos valores booleanos
+# here we add the new columns with its corresponding values
 for i in range(len(new_columns)):
     for j in range(len(new_columns[i])):
         dataset[new_columns[i][j]] = (dataset[gdo_rezsoc[i]] == valores_unicos_en_gdo[i][j]).astype(int)
 
-# aqui removemos las columnas que no tienen valores numéricos
+# remove columns with no numerical values
 for i in range(len(gdo_rezsoc)):
     dataset = dataset.drop(columns = gdo_rezsoc[i])
 
